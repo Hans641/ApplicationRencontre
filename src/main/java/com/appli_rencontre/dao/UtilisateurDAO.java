@@ -5,6 +5,8 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet; // Ajouté pour la lecture des données
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
 
 public class UtilisateurDAO {
     
@@ -77,5 +79,62 @@ public class UtilisateurDAO {
         e.printStackTrace();
     }
     return false;
+}
+public List<Utilisateur> recupererTousSauf(int idConnecte) {
+    List<Utilisateur> liste = new ArrayList<>();
+    String sql = "SELECT * FROM utilisateurs WHERE id != ? LIMIT 20";
+    
+    try (Connection conn = DBConnexion.getConnection();
+         PreparedStatement ps = conn.prepareStatement(sql)) {
+        
+        ps.setInt(1, idConnecte);
+        try (ResultSet rs = ps.executeQuery()) {
+            while (rs.next()) {
+                Utilisateur u = new Utilisateur();
+                u.setId(rs.getInt("id"));
+                u.setNom(rs.getString("nom"));
+                u.setPrenom(rs.getString("prenom"));
+                u.setGenre(rs.getString("genre"));
+                u.setVille(rs.getString("ville"));
+                u.setInteret(rs.getString("interet"));
+                liste.add(u);
+            }
+        }
+    } catch (SQLException e) {
+        e.printStackTrace();
+    }
+    return liste;
+}
+public List<Utilisateur> recupererParFiltre(int idConnecte, String interetRecherche) {
+    List<Utilisateur> liste = new ArrayList<>();
+    // Si l'utilisateur cherche "Les deux", on retire le filtre de genre dans la requête
+    String sql = interetRecherche.equals("Les deux") 
+                 ? "SELECT * FROM utilisateurs WHERE id != ?" 
+                 : "SELECT * FROM utilisateurs WHERE id != ? AND genre = ?";
+    
+    try (Connection conn = DBConnexion.getConnection();
+         PreparedStatement ps = conn.prepareStatement(sql)) {
+        
+        ps.setInt(1, idConnecte);
+        if (!interetRecherche.equals("Les deux")) {
+            ps.setString(2, interetRecherche);
+        }
+
+        try (ResultSet rs = ps.executeQuery()) {
+            while (rs.next()) {
+                Utilisateur u = new Utilisateur();
+                u.setId(rs.getInt("id"));
+                u.setNom(rs.getString("nom"));
+                u.setPrenom(rs.getString("prenom"));
+                u.setGenre(rs.getString("genre"));
+                u.setVille(rs.getString("ville"));
+                u.setInteret(rs.getString("interet"));
+                liste.add(u);
+            }
+        }
+    } catch (SQLException e) {
+        e.printStackTrace();
+    }
+    return liste;
 }
 }

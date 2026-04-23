@@ -8,6 +8,8 @@ import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpSession;
+
 import java.io.IOException;
 
 @WebServlet("/inscription")
@@ -19,7 +21,7 @@ public class InscriptionServlet extends HttpServlet {
 protected void doPost(HttpServletRequest request, HttpServletResponse response) 
         throws ServletException, IOException {
     
-    // 1. Récupération des paramètres du formulaire
+    // 1. Récupération des données du formulaire
     String nom = request.getParameter("nom");
     String prenom = request.getParameter("prenom");
     String email = request.getParameter("email");
@@ -29,35 +31,50 @@ protected void doPost(HttpServletRequest request, HttpServletResponse response)
     String interet = request.getParameter("interet");
     String ville = request.getParameter("ville");
 
-    // 2. Vérification : Les mots de passe correspondent-ils ?
+    // 2. Sécurité : Vérification de la correspondance des mots de passe
     if (password == null || !password.equals(confirmPassword)) {
         response.sendRedirect("inscription.jsp?status=password_mismatch");
         return; 
     }
 
-    // 3. Vérification : L'email existe-t-il déjà dans Kismet ?
+    // 3. Sécurité : Vérification si l'email existe déjà
     if (utilisateurDAO.emailExiste(email)) {
         response.sendRedirect("inscription.jsp?status=email_exists");
         return;
     }
 
-    // 4. Création de l'objet utilisateur
+    // 4. Préparation de l'objet Utilisateur
     Utilisateur nouvelUtilisateur = new Utilisateur();
     nouvelUtilisateur.setNom(nom);
     nouvelUtilisateur.setPrenom(prenom);
     nouvelUtilisateur.setEmail(email);
-    nouvelUtilisateur.setMotDePasse(password); // En situation réelle, on hacherait ce MDP
+    nouvelUtilisateur.setMotDePasse(password);
     nouvelUtilisateur.setGenre(genre);
     nouvelUtilisateur.setInteret(interet);
     nouvelUtilisateur.setVille(ville);
 
-    // 5. Tentative d'inscription via le DAO
+    // 5. Action : Inscription en base de données
     boolean succes = utilisateurDAO.inscrireUtilisateur(nouvelUtilisateur);
 
-    // 6. Redirection finale selon le résultat
+    // 6. Gestion du résultat
     if (succes) {
-        response.sendRedirect("inscription.jsp?status=success");
+        // --- CONNEXION AUTOMATIQUE ---
+        // On récupère l'utilisateur complet depuis la DB (pour avoir son ID auto-généré)
+        Utilisateur userConnecte = utilisateurDAO.verifierLogin(email, password);
+        
+        if (userConnecte != null) {
+            // On crée la session immédiatement
+            HttpSession session = request.getSession();
+            session.setAttribute("utilisateurConnecte", userConnecte);
+            
+            // Redirection directe vers le profil sans repasser par le login
+            response.sendRedirect("profil.jsp");
+        } else {
+            // Cas rare : inscrit mais non trouvé juste après (erreur DB)
+            response.sendRedirect("login.jsp?status=success");
+        }
     } else {
+        // En cas d'erreur technique lors de l'insertion
         response.sendRedirect("inscription.jsp?status=error");
     }
 }

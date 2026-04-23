@@ -76,7 +76,7 @@
     <nav>
         <a href="#" class="nav-logo">Kismet</a>
         <div class="nav-links">
-            <a href="#">Découvrir</a>
+            <a href="decouvrir">Découvrir</a>
             <a href="#">Messages</a>
             <a href="logout.jsp" class="btn-logout">Déconnexion</a>
         </div>
