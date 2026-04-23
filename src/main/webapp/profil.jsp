@@ -23,8 +23,24 @@
     .nav-logo { font-family: 'Playfair Display', serif; font-size: 1.8rem; color: #ff4b2b; text-decoration: none; font-weight: bold; }
     
     /* Liens nav standard */
-    .nav-links a { color: #e0e0e0; text-decoration: none; margin-left: 20px; font-size: 0.9em; transition: 0.3s; }
-    .nav-links a:hover:not(.btn-logout) { color: #ff4b2b; }
+        /* Style pour l'onglet actif ou survolé */
+        .nav-links a {
+            color: #e0e0e0;
+            text-decoration: none;
+            margin-left: 20px;
+            font-size: 0.9em;
+            transition: 0.3s;
+            padding: 5px 10px;
+        }
+
+        .nav-links a:hover:not(.btn-logout) {
+            color: #ff4b2b;
+            border-bottom: 2px solid #ff4b2b;
+        }
+
+        /* Optionnel : tu peux forcer la couleur si tu es sur la page correspondante */
+        /* Dans decouvrir.jsp, ajoute cette ligne dans le style : */
+        /* #nav-discover { color: #ff4b2b; border-bottom: 2px solid #ff4b2b; } */
 
     /* Carte Profil */
     .profile-container { width: 90%; max-width: 800px; margin-top: 50px; background: #1e1e1e; border-radius: 15px; overflow: hidden; box-shadow: 0 10px 30px rgba(0,0,0,0.5); display: flex; }
@@ -69,18 +85,36 @@
         box-shadow: 0 4px 12px rgba(255, 75, 43, 0.4);
         transform: translateY(-2px);
     }
+
+    .form-group { display: flex; flex-direction: column; gap: 5px; }
+    .input-kismet {
+        background: #252525;
+        color: white;
+        border: 1px solid #333;
+        border-radius: 8px;
+        padding: 12px;
+        font-family: 'Poppins', sans-serif;
+        font-size: 0.9em;
+    }
+    .input-kismet:focus { border-color: #ff4b2b; outline: none; background: #2a2a2a; }
+    .bio-label { font-size: 0.75em; color: #ff4b2b; font-weight: 600; text-transform: uppercase; letter-spacing: 1px; }
 </style>
 </head>
 <body>
 
-    <nav>
-        <a href="#" class="nav-logo">Kismet</a>
-        <div class="nav-links">
-            <a href="decouvrir">Découvrir</a>
-            <a href="#">Messages</a>
-            <a href="logout.jsp" class="btn-logout">Déconnexion</a>
-        </div>
-    </nav>
+        <nav>
+            <a href="profil.jsp" class="nav-logo">Kismet</a>
+            
+            <div class="nav-links">
+                <a href="profil.jsp" id="nav-home">Mon Profil</a>
+                
+                <a href="decouvrir" id="nav-discover">Découvrir</a>
+                
+                <a href="#">Messages</a>
+                
+                <a href="logout.jsp" class="btn-logout">Déconnexion</a>
+            </div>
+        </nav>
 
     <div class="profile-container">
         <div class="profile-header">
@@ -108,6 +142,45 @@
             <p style="margin-top: 40px; color: #888;">Bienvenue sur votre espace personnel Kismet. Complétez votre profil pour faire de nouvelles rencontres à <%= user.getVille() %>.</p>
         </div>
     </div>
-
+    <div class="profile-container" style="margin-top: 20px; display: block; padding: 30px;">
+    <h3 style="color: #ff4b2b; font-family: 'Playfair Display', serif;">Compléter mon Destin</h3>
+    <p style="font-size: 0.85em; color: #888; margin-bottom: 20px;">Ces informations aideront vos correspondants à mieux vous connaître.</p>
+    
+    <<form action="${pageContext.request.contextPath}/modifierProfil" method="post">
+        <div class="info-grid" style="grid-template-columns: 1fr 1fr; gap: 20px;">
+            <div class="form-group">
+                <label class="bio-label">Âge</label>
+                <input type="number" name="age" placeholder="Ex: 24" class="input-kismet">
+            </div>
+            <div class="form-group">
+                <label class="bio-label">Signe Astrologique</label>
+                <input type="text" name="signe" placeholder="Ex: Lion" class="input-kismet">
+            </div>
+            <div class="form-group">
+                <label class="bio-label">Situation Amoureuse</label>
+                <input type="text" name="situation" placeholder="Ex: Célibataire" class="input-kismet">
+            </div>
+            <div class="form-group">
+                <label class="bio-label">Religion</label>
+                <input type="text" name="religion" placeholder="Ex: Chrétien" class="input-kismet">
+            </div>
+            
+            <div class="form-group" style="grid-column: span 2;">
+                <label class="bio-label">Bio (Ma personnalité, mes attentes)</label>
+                <textarea name="bio" placeholder="Décrivez votre genre de personne..." class="input-kismet" style="height: 80px;"></textarea>
+            </div>
+            <div class="form-group" style="grid-column: span 2;">
+                <label class="bio-label">Centres d'intérêt</label>
+                <input type="text" name="interets" placeholder="Ex: Musique, Voyage, Football" class="input-kismet">
+            </div>
+            <div class="form-group" style="grid-column: span 2;">
+                <label class="bio-label" style="color: #ff3916;">Red Flags (Ce que vous n'acceptez pas)</label>
+                <input type="text" name="redflags" placeholder="Ex: Mensonge, Retard" class="input-kismet">
+            </div>
+        </div>
+        
+        <button type="submit" class="btn-logout" style="margin-top: 25px; width: 100%;">Publier mon profil complet</button>
+    </form>
+</div>
 </body>
 </html>
