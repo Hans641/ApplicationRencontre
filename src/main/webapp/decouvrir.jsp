@@ -7,6 +7,9 @@
         response.sendRedirect("login.jsp");
         return;
     }
+    
+    // Récupération d'un éventuel message de succès après envoi de Kismet
+    String success = request.getParameter("success");
 %>
 <!DOCTYPE html>
 <html lang="fr">
@@ -28,10 +31,24 @@
     .nav-links a { color: #e0e0e0; text-decoration: none; margin-left: 25px; font-size: 0.9em; transition: 0.3s; }
     .nav-links a#nav-discover { color: #ff4b2b; border-bottom: 2px solid #ff4b2b; }
     
+    /* Style pour l'onglet Notifications */
+    .notif-link { position: relative; }
+    .notif-dot { 
+        position: absolute; top: -5px; right: -10px; 
+        width: 8px; height: 8px; background: #ff4b2b; border-radius: 50%; 
+    }
+
     .btn-logout { 
         background-color: #ff4b2b !important; color: white !important; 
         padding: 8px 20px !important; border-radius: 20px !important; 
         font-weight: 600; text-decoration: none; margin-left: 30px;
+    }
+
+    /* Message de succès (Feedback ergonomique) */
+    .alert-success {
+        background: rgba(46, 204, 113, 0.2); color: #2ecc71;
+        border: 1px solid #2ecc71; padding: 15px; border-radius: 10px;
+        text-align: center; margin-bottom: 20px; font-size: 0.9em;
     }
 
     /* Grille & Cartes */
@@ -76,12 +93,21 @@
         <div class="nav-links">
             <a href="${pageContext.request.contextPath}/profil.jsp">Mon Profil</a>
             <a href="${pageContext.request.contextPath}/decouvrir" id="nav-discover">Découvrir</a>
-            <a href="#">Messages</a>
+            <a href="${pageContext.request.contextPath}/notifications" class="notif-link">
+                Notifications
+                <%-- On pourrait ajouter une condition ici pour afficher le point rouge si notif > 0 --%>
+                <span class="notif-dot"></span>
+            </a>
+           <a href="${pageContext.request.contextPath}/messages">Messages</a>
             <a href="${pageContext.request.contextPath}/logout.jsp" class="btn-logout">Déconnexion</a>
         </div>
     </nav>
 
     <div class="container">
+        <% if("1".equals(success)) { %>
+            <div class="alert-success">✨ Votre Kismet a été envoyé avec succès !</div>
+        <% } %>
+
         <h2>Découvrir des <span>destins</span> à <%= currentUser.getVille() %></h2>
         
         <div class="grid">
@@ -118,7 +144,7 @@
                         "L'amour n'est qu'un hasard qui nous attend."
                     </p>
                     
-                    <a href="#" class="btn-match">Lancer un Kismet</a>
+                    <a href="${pageContext.request.contextPath}/envoyerKismet?id=<%= m.getId() %>" class="btn-match">Lancer un Kismet</a>
                 </div>
             <% 
                     }
