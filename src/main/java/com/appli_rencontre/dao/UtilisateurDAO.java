@@ -30,22 +30,31 @@ public class UtilisateurDAO {
     }
 
     // Connexion : on récupère TOUT pour mettre l'utilisateur complet en session
-    public Utilisateur verifierLogin(String email, String password) {
-        String sql = "SELECT * FROM utilisateurs WHERE email = ? AND mot_de_passe = ?";
-        try (Connection conn = DBConnexion.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
-            ps.setString(1, email);
-            ps.setString(2, password);
-            try (ResultSet rs = ps.executeQuery()) {
-                if (rs.next()) {
-                    return mapperUtilisateur(rs);
-                }
-            }
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-        return null;
+ public Utilisateur verifierLogin(String email, String password) {
+    String sql = "SELECT * FROM utilisateurs WHERE email = ? AND mot_de_passe = ?";
+    Connection conn = DBConnexion.getConnection();
+    
+    // Sécurité : Si la connexion échoue, on évite le crash (NPE)
+    if (conn == null) {
+        System.err.println("Erreur fatale : Impossible d'obtenir une connexion SQL.");
+        return null; 
     }
+
+    try (PreparedStatement ps = conn.prepareStatement(sql)) {
+        ps.setString(1, email);
+        ps.setString(2, password);
+        try (ResultSet rs = ps.executeQuery()) {
+            if (rs.next()) {
+                return mapperUtilisateur(rs);
+            }
+        }
+    } catch (SQLException e) {
+        e.printStackTrace();
+    } finally {
+        try { if (conn != null) conn.close(); } catch (SQLException e) { e.printStackTrace(); }
+    }
+    return null;
+}
 
     public boolean emailExiste(String email) {
         String sql = "SELECT COUNT(*) FROM utilisateurs WHERE email = ?";
