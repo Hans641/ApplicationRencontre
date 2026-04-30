@@ -18,6 +18,7 @@ public class Utilisateur implements Serializable {
     private String genre;
     private String interet;
     private String ville;
+    private boolean modeIncognito;
 
     // Détails du Profil Étendu (Description personnalisée)
     private int age;
@@ -88,4 +89,11 @@ public class Utilisateur implements Serializable {
         }
         return "U";
     }
+    public boolean isModeIncognito() { 
+        return modeIncognito;
+     }
+
+    public void setModeIncognito(boolean modeIncognito) { 
+        this.modeIncognito = modeIncognito;
+     }
 }

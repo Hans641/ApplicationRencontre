@@ -32,7 +32,6 @@
         padding: 5px 10px;
     }
 
-    /* Style pour l'onglet actif */
     #nav-home { color: #ff4b2b; border-bottom: 2px solid #ff4b2b; }
 
     .nav-links a:hover:not(.btn-logout) {
@@ -40,7 +39,6 @@
         border-bottom: 2px solid #ff4b2b;
     }
 
-    /* Style pour la pastille de notification */
     .notif-link { position: relative; }
     .notif-dot { 
         position: absolute; top: -2px; right: -5px; 
@@ -67,6 +65,37 @@
     .info-label { font-size: 0.8em; color: #888; text-transform: uppercase; display: block; }
     .info-value { font-size: 1.1em; color: #fff; font-weight: 500; }
 
+    /* NOUVEAU STYLE : Section Incognito */
+.incognito-card {
+        background: #252525;
+        border-radius: 8px;
+        padding: 20px;
+        margin-top: 30px;
+        border: 1px dashed #444; /* Bordure par défaut */
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+    .incognito-text h4 { margin: 0; color: #fff; font-size: 1rem; }
+    .incognito-text p { margin: 5px 0 0; font-size: 0.8em; color: #888; }
+.btn-incognito {
+        padding: 8px 15px;
+        border-radius: 20px;
+        text-decoration: none;
+        font-size: 0.85em;
+        font-weight: 600;
+        transition: 0.3s;
+        background: #ff4b2b; /* Couleur par défaut */
+        color: white;
+    }
+    .btn-incognito:hover { opacity: 0.8; transform: scale(1.05); }
+    .incognito-active {
+        border-color: #ff4b2b;
+    }
+    .btn-incognito-on {
+        background: #333;
+    }
+
     .btn-logout { 
         background-color: #ff4b2b !important;
         color: white !important;
@@ -91,19 +120,15 @@
 <body>
 
     <nav>
-        <a href="profil.jsp" class="nav-logo">Kismet</a>
-        
+        <a href="${pageContext.request.contextPath}/profil.jsp" class="nav-logo">Kismet</a>
         <div class="nav-links">
             <a href="${pageContext.request.contextPath}/profil.jsp" id="nav-home">Mon Profil</a>
             <a href="${pageContext.request.contextPath}/decouvrir" id="nav-discover">Découvrir</a>
-            
             <a href="${pageContext.request.contextPath}/notifications" class="notif-link">
                 Notifications
                 <span class="notif-dot"></span>
             </a>
-            
             <a href="${pageContext.request.contextPath}/messages">Messages</a>
-            
             <a href="${pageContext.request.contextPath}/logout.jsp" class="btn-logout">Déconnexion</a>
         </div>
     </nav>
@@ -111,13 +136,13 @@
     <div class="profile-container">
         <div class="profile-header">
             <div class="avatar-circle">
-                <%= user.getPrenom().substring(0, 1).toUpperCase() %>
+                <%= user.getInitiale() %>
             </div>
             <span style="color: white; font-weight: bold;"><%= user.getGenre() %></span>
         </div>
 
         <div class="profile-content">
-            <h1>Bonjour, <%= user.getPrenom() %> <%= user.getNom() %> !</h1>
+            <h1>Bonjour, <%= user.getPrenom() %> <%= (user.getNom() != null) ? user.getNom() : "" %> !</h1>
             <span class="location">📍 <%= user.getVille() %></span>
 
             <div class="info-grid">
@@ -130,8 +155,22 @@
                     <span class="info-value"><%= user.getInteret() %></span>
                 </div>
             </div>
+
+            <!-- AJOUT : Bloc Mode Incognito -->
+            <!-- Bloc Mode Incognito corrigé -->
+            <div class="incognito-card <%= user.isModeIncognito() ? "incognito-active" : "" %>">
+                <div class="incognito-text">
+                    <h4>Mode Incognito : <%= user.isModeIncognito() ? "Activé 🕵️" : "Désactivé" %></h4>
+                    <p><%= user.isModeIncognito() ? "Vous êtes caché des autres mais vous ne pouvez pas lancer de Kismet." : "Tout le monde peut découvrir votre profil." %></p>
+                </div>
+                
+                <a href="${pageContext.request.contextPath}/toggleIncognito" 
+                class="btn-incognito <%= user.isModeIncognito() ? "btn-incognito-on" : "" %>">
+                    <%= user.isModeIncognito() ? "Devenir Visible" : "Passer Incognito" %>
+                </a>
+            </div>
             
-            <p style="margin-top: 40px; color: #888;">Bienvenue sur votre espace personnel Kismet. Complétez votre profil pour faire de nouvelles rencontres à <%= user.getVille() %>.</p>
+            <p style="margin-top: 20px; color: #888;">Bienvenue sur votre espace personnel Kismet. Complétez votre profil pour faire de nouvelles rencontres à <%= user.getVille() %>.</p>
         </div>
     </div>
 

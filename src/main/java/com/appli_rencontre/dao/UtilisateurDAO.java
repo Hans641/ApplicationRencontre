@@ -69,25 +69,35 @@ public class UtilisateurDAO {
     }
 
     // Découverte : Correction ici pour inclure la BIO dans les cartes
-    public List<Utilisateur> recupererParFiltre(int idConnecte, String interetRecherche) {
-        List<Utilisateur> liste = new ArrayList<>();
-        String sql = interetRecherche.equals("Les deux") 
-                     ? "SELECT * FROM utilisateurs WHERE id != ?" 
-                     : "SELECT * FROM utilisateurs WHERE id != ? AND genre = ?";
+public List<Utilisateur> recupererParFiltre(int idConnecte, String interetRecherche) {
+    List<Utilisateur> liste = new ArrayList<>();
+    
+    // Ajout de la condition 'mode_incognito = FALSE' pour filtrer les profils cachés
+    String sql = interetRecherche.equals("Les deux") 
+                 ? "SELECT * FROM utilisateurs WHERE id != ? AND mode_incognito = FALSE" 
+                 : "SELECT * FROM utilisateurs WHERE id != ? AND genre = ? AND mode_incognito = FALSE";
+    
+    try (Connection conn = DBConnexion.getConnection();
+         PreparedStatement ps = conn.prepareStatement(sql)) {
         
-        try (Connection conn = DBConnexion.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
-            ps.setInt(1, idConnecte);
-            if (!interetRecherche.equals("Les deux")) ps.setString(2, interetRecherche);
+        ps.setInt(1, idConnecte);
+        if (!interetRecherche.equals("Les deux")) {
+            ps.setString(2, interetRecherche);
+        }
 
-            try (ResultSet rs = ps.executeQuery()) {
-                while (rs.next()) {
-                    liste.add(mapperUtilisateur(rs)); // Utilisation du mapper complet
-                }
+        try (ResultSet rs = ps.executeQuery()) {
+            while (rs.next()) {
+                // Le mapper se chargera de remplir l'objet Utilisateur, 
+                // incluant le nouvel attribut modeIncognito
+                liste.add(mapperUtilisateur(rs)); 
             }
-        } catch (SQLException e) { e.printStackTrace(); }
-        return liste;
+        }
+    } catch (SQLException e) { 
+        System.err.println("Erreur lors de la récupération filtrée : " + e.getMessage());
+        e.printStackTrace(); 
     }
+    return liste;
+}
 
     // Mise à jour du profil complet
     public boolean mettreAJourDescription(Utilisateur u) {
@@ -144,4 +154,16 @@ public class UtilisateurDAO {
         u.setRedFlags(rs.getString("red_flags"));
         return u;
     }
+    public boolean mettreAJourModeIncognito(int userId, boolean etat) {
+    String sql = "UPDATE utilisateurs SET mode_incognito = ? WHERE id = ?";
+    try (Connection conn = DBConnexion.getConnection();
+         PreparedStatement ps = conn.prepareStatement(sql)) {
+        ps.setBoolean(1, etat);
+        ps.setInt(2, userId);
+        return ps.executeUpdate() > 0;
+    } catch (SQLException e) {
+        e.printStackTrace();
+        return false;
+    }
+}
 }

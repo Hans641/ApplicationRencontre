@@ -34,7 +34,6 @@
     .nav-links a { color: #e0e0e0; text-decoration: none; margin-left: 25px; font-size: 0.9em; transition: 0.3s; }
     .nav-links a#nav-discover { color: #ff4b2b; border-bottom: 2px solid #ff4b2b; }
     
-    /* Style pour l'onglet Notifications */
     .notif-link { position: relative; }
     .notif-dot { 
         position: absolute; top: -5px; right: -10px; 
@@ -47,14 +46,19 @@
         font-weight: 600; text-decoration: none; margin-left: 30px;
     }
 
-    /* Message de succès (Feedback ergonomique) */
     .alert-success {
         background: rgba(46, 204, 113, 0.2); color: #2ecc71;
         border: 1px solid #2ecc71; padding: 15px; border-radius: 10px;
         text-align: center; margin-bottom: 20px; font-size: 0.9em;
     }
 
-    /* Grille & Cartes */
+    /* Style spécifique pour l'alerte Incognito */
+    .alert-incognito {
+        background: rgba(255, 75, 43, 0.1); color: #ff4b2b;
+        border: 1px dashed #ff4b2b; padding: 15px; border-radius: 10px;
+        text-align: center; margin-bottom: 25px; font-size: 0.85em;
+    }
+
     .container { max-width: 1200px; margin: 40px auto; padding: 0 20px; }
     h2 { font-family: 'Playfair Display', serif; text-align: center; margin-bottom: 40px; color: #fff; }
     h2 span { color: #ff4b2b; }
@@ -80,7 +84,6 @@
         font-size: 0.7em; color: #ff4b2b; text-transform: uppercase; border: 1px solid rgba(255, 75, 43, 0.3);
     }
     
-    /* Nouveau badge de statut Kismet */
     .kismet-active-status {
         background: rgba(46, 204, 113, 0.1); color: #2ecc71;
         border: 1px solid #2ecc71; padding: 10px; border-radius: 10px;
@@ -95,11 +98,13 @@
         border: 2px solid #ff4b2b; padding: 10px 25px; border-radius: 30px; 
         cursor: pointer; font-weight: 600; text-decoration: none; display: inline-block; transition: 0.3s; 
     }
-    .btn-match:hover { background: #ff4b2b; color: #fff; }
+    .btn-match:hover:not(.btn-disabled) { background: #ff4b2b; color: #fff; }
 
-    /* Style spécifique pour le bouton de message si déjà en Kismet */
     .btn-chat { border-color: #2ecc71; color: #2ecc71; }
     .btn-chat:hover { background: #2ecc71; color: #fff; }
+
+    /* Nouveau style pour bouton bloqué */
+    .btn-disabled { border-color: #444; color: #666; cursor: not-allowed; }
 </style>
 </head>
 <body>
@@ -119,6 +124,13 @@
     </nav>
 
     <div class="container">
+        <%-- Message si le mode Incognito est actif --%>
+        <% if (currentUser.isModeIncognito()) { %>
+            <div class="alert-incognito">
+                🕵️ <strong>Mode Incognito actif</strong> : Vous pouvez explorer les profils, mais l'envoi de Kismet est suspendu.
+            </div>
+        <% } %>
+
         <% if("1".equals(success)) { %>
             <div class="alert-success">✨ Votre Kismet a été envoyé avec succès !</div>
         <% } %>
@@ -130,7 +142,6 @@
                 List<Utilisateur> membres = (List<Utilisateur>) request.getAttribute("membres");
                 if(membres != null && !membres.isEmpty()) {
                     for(Utilisateur m : membres) {
-                        // Vérifier si cet utilisateur est déjà un match
                         boolean isAlreadyMatched = (matchedIds != null && matchedIds.contains(m.getId()));
             %>
                 <div class="card">
@@ -143,7 +154,6 @@
                             <span class="badge"><%= m.getGenre() %></span>
                         </div>
 
-                        <%-- Affichage conditionnel : Bio ou Statut Kismet --%>
                         <% if (isAlreadyMatched) { %>
                             <div class="kismet-active-status">
                                 ✨ Vous êtes actuellement en Kismet
@@ -171,9 +181,11 @@
                             "L'amour n'est qu'un hasard qui nous attend."
                         </p>
                         
-                        <%-- Bouton conditionnel : Lancer ou Discuter --%>
+                        <%-- Logique du bouton avec restriction Incognito --%>
                         <% if (isAlreadyMatched) { %>
                             <a href="${pageContext.request.contextPath}/chat?id=<%= m.getId() %>" class="btn-match btn-chat">Discuter</a>
+                        <% } else if (currentUser.isModeIncognito()) { %>
+                            <span class="btn-match btn-disabled" title="Désactivez le mode incognito pour interagir">Lancer un Kismet</span>
                         <% } else { %>
                             <a href="${pageContext.request.contextPath}/envoyerKismet?id=<%= m.getId() %>" class="btn-match">Lancer un Kismet</a>
                         <% } %>
