@@ -87,4 +87,37 @@ public class KismetDAO {
     } catch (SQLException e) { e.printStackTrace(); }
     return matches;
 }
+// À ajouter dans KismetDAO.java
+public List<Integer> recupererIdsMatches(int userId) {
+    List<Integer> ids = new ArrayList<>();
+    // Utilisation stricte des noms de colonnes confirmés par ton DESC :
+    // expediteur_id, destinataire_id et statut
+    String sql = "SELECT expediteur_id, destinataire_id FROM kismets WHERE (expediteur_id = ? OR destinataire_id = ?) AND statut = 'accepte'";
+    
+    try (Connection conn = DBConnexion.getConnection();
+         PreparedStatement ps = conn.prepareStatement(sql)) {
+        
+        ps.setInt(1, userId);
+        ps.setInt(2, userId);
+        
+        try (ResultSet rs = ps.executeQuery()) {
+            while (rs.next()) {
+                int expediteur = rs.getInt("expediteur_id");
+                int destinataire = rs.getInt("destinataire_id");
+                
+                // Si l'expéditeur c'est moi, j'ajoute l'ID du destinataire. 
+                // Sinon, j'ajoute l'ID de l'expéditeur.
+                if (expediteur == userId) {
+                    ids.add(destinataire);
+                } else {
+                    ids.add(expediteur);
+                }
+            }
+        }
+    } catch (SQLException e) { 
+        System.err.println("Erreur dans recupererIdsMatches : " + e.getMessage());
+        e.printStackTrace(); 
+    }
+    return ids;
+}
 }
